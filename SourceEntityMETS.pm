@@ -19,11 +19,12 @@ $xpc->registerNs("m", "http://www.loc.gov/METS/");
 
 sub new
 {
-	my ($class, $mets_file) = @_;
+	my ($class, $mets_file, $logger) = @_;
 	my $self = {};
 	$self->{doc} = XML::LibXML->load_xml(location => $mets_file);
 	$self->{file} = $mets_file;
 	$self->{id} = getval($xpc, '/m:mets/@OBJID', $self->{doc});
+	$self->{logger} = $logger;
 
 	bless ($self, $class);
 	return $self;
@@ -46,14 +47,29 @@ sub get_id
 sub get_file_ids
 {
 	my $self = shift;
+	my $logger = $self->{logger};
 	my @file_ids = ();
 	my $xpath = '/m:mets/m:structMap/m:div/m:div/m:div[@ORDER]';
 	for my $div (sort by_order $xpc->findnodes($xpath, $self->{doc}))
 	{
-		my $file_id = getval($xpc, './m:fptr/@FILEID', $div);
-		$file_id =~ s/^f-//;
-		$file_id =~ s/_[dm]$//;
-		push(@file_ids, $file_id);
+		my $div_id = getval($xpc, './@ID', $div);
+		my $dmaker_file_id = "";
+		for my $fid_attr ($xpc->findnodes('./m:fptr/@FILEID', $div))
+		{
+			my $file_id = getval($xpc, '.', $fid_attr);
+			if ($file_id =~ /_d$/) {
+				$file_id =~ s/^f-//;
+				$file_id =~ s/_d$//;
+				$dmaker_file_id = $file_id;
+				last;
+			}
+		}
+		if (!$dmaker_file_id)
+		{
+			$logger->error("Missing dmaker for div $div_id.") if $logger;
+			return undef;
+		}
+		push(@file_ids, $dmaker_file_id);
 	}
 	wantarray ? @file_ids : \@file_ids;
 }
