@@ -301,13 +301,17 @@ sub geo_coordinates
 		if (!$coord{$location})
 		{
 			my ($lat, $lng) = lookup_coordinates($location);
-			$coord{$location} = {
-				location  => $location,
-				latitude  => $lat,
-				longitude => $lng,
-			};
+			if (defined($lat) && defined($lng))
+			{
+				$coord{$location} = {
+					location  => $location,
+					latitude  => $lat,
+					longitude => $lng,
+				};
+			}
 		}
 	}
+	return if !%coord;
 	my @results = sort { $a->{location} cmp $b->{location} } values %coord;
 	return wantarray ? @results : \@results;
 }
