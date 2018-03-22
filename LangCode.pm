@@ -19,6 +19,7 @@ my $lang_code_file =
   dirname($INC{__PACKAGE__ . ".pm"}) . "/ISO-639-2_utf-8.txt";
 
 my $long_name = {};
+my $terminologic_code = {};
 open(my $in, $lang_code_file) or die("can't open $lang_code_file: $!");
 while (my $line = <$in>)
 {
@@ -26,13 +27,20 @@ while (my $line = <$in>)
 	my ($biblio_code, $term_code, $other_code, $eng_name, $fr_name) =
 	  split(/\|/, $line);
 	$long_name->{$biblio_code} = $eng_name;
+	$terminologic_code->{$biblio_code} = $term_code;
 }
 close($in);
 
 sub long_name
 {
-	my $short_code = shift;
-	return $long_name->{$short_code};
+	my $biblio_code = shift;
+	return $long_name->{$biblio_code};
+}
+
+sub term_code
+{
+	my $biblio_code = shift;
+	return $terminologic_code->{$biblio_code};
 }
 
 1;
