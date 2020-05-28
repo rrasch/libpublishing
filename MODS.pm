@@ -317,6 +317,7 @@ sub geo_coordinates
 }
 
 
+# Requires Googe MapsV3 API Key
 sub lookup_coordinates
 {
 	my $location = shift;

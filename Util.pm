@@ -99,6 +99,11 @@ sub info
 
 sub sys
 {
+	my $opts = {};
+	if (@_ && ref($_[$#_]) eq 'HASH')
+	{
+		$opts = pop;
+	}
 	my @cmd = @_;
 	my $cmd_str = join(" ", @cmd);
 	$log->debug("running command $cmd_str");
@@ -114,23 +119,28 @@ sub sys
 	$log->debug("run time: ", duration_exact($end_time - $start_time));
 	if ($retval)
 	{
+		my $err_msg;
 		if ($? == -1)
 		{
-			$log->logdie("failed to execute $cmd_str: $errno");
+			$err_msg = "failed to execute $cmd_str: $errno";
 		}
 		elsif ($? & 127)
 		{
-			$log->logdie(
-				sprintf(
-					"$cmd_str died with signal %d, %s coredump",
-					($? & 127),
-					($? & 128) ? 'with' : 'without'
-				)
+			$err_msg = sprintf(
+				"$cmd_str died with signal %d, %s coredump",
+				($? & 127),
+				($? & 128) ? 'with' : 'without'
 			);
 		}
 		else
 		{
-			$log->logdie(sprintf("$cmd_str exited with value %d", $? >> 8));
+			$err_msg = sprintf("$cmd_str exited with value %d", $? >> 8);
+		}
+		$err_msg .= ", Output: $output\n";
+		if ($opts->{warnErrors}) {
+			$log->logwarn($err_msg);
+		} else {
+			$log->logdie($err_msg);
 		}
 	}
 	return $output;
