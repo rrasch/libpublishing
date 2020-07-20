@@ -289,6 +289,22 @@ sub subject
 }
 
 
+sub geo_subject
+{
+	my $self = shift;
+	my $xpath = "//m:subject[\@authority='lcsh']/m:geographic";
+	my @geo_elems = $xpc->findnodes($xpath, $self->{doc});
+	my %uniq_loc_list = ();
+	for my $geo_elem (@geo_elems)
+	{
+		my $location = getval($xpc, ".", $geo_elem);
+		$uniq_loc_list{$location} = 1;
+	}
+	my @loc = sort keys %uniq_loc_list;
+	return wantarray ? @loc : join(", ", @loc);
+}
+
+
 sub geo_coordinates
 {
 	my $self = shift;
