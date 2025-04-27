@@ -4,9 +4,11 @@ package XMLUtil;
 
 use parent Exporter;
 
+use strict;
+use warnings;
 use XML::LibXML;
 
-@EXPORT_OK = qw(getval getval_noc);
+our @EXPORT_OK = qw(getval getval_noc getvals);
 
 sub getval
 {
@@ -44,13 +46,13 @@ sub getval
 sub getvals
 {
 	my ($xpc, $xpath, $node, $want_raw, $default_val) = @_;
-	my $found_node;
+	my @found_nodes;
 	if ($xpc) {
 		@found_nodes = $xpc->findnodes($xpath, $node);
 	} else {
 		@found_nodes = $node->findnodes($xpath);
 	}
-	if (!$found_nodes)
+	if (!@found_nodes)
 	{
 		return wantarray ? () : $default_val;
 	}
