@@ -12,7 +12,7 @@ use MARCCountry;
 use URI::Escape;
 use WWW::Mechanize;
 use XML::LibXML;
-use XMLUtil qw(getval getval_noc);
+use XMLUtil qw(getval getval_noc getvals);
 
 our $VERSION = "0.01";
 
@@ -215,8 +215,15 @@ sub get_valid_date
 
 sub lang_code
 {
-	my $self = shift;
-	my $lang_code = getval($xpc, "//m:language/m:languageTerm[\@authority='iso639-2b' and \@type='code']", $self->{doc});
+	my $self  = shift;
+	my $xpath = "//m:language/m:languageTerm[\@authority='iso639-2b'"
+	  . " and \@type='code']";
+	my @lang_codes = getvals($xpc, $xpath, $self->{doc});
+	if (wantarray) {
+		return @lang_codes;
+	} else {
+		return @lang_codes ? $lang_codes[0] : undef;
+	}
 }
 
 
